@@ -11,6 +11,12 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <AnalysisLevel>preview</AnalysisLevel>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    </PropertyGroup>
+
     <ItemGroup>
         <Compile Remove="Generator\**" />
         <EmbeddedResource Remove="Generator\**" />
@@ -22,13 +28,16 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" PrivateAssets="all" GeneratePathProperty="true" />
         <None Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" PrivateAssets="all" GeneratePathProperty="true" />
         <None Include="$(PkgMicrosoft_CodeAnalysis_CSharp_Workspaces)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-        <PackageReference Include="MrMeeseeks.SourceGeneratorUtility" Version="1.0.9" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="MrMeeseeks.SourceGeneratorUtility" Version="1.0.10" PrivateAssets="all" GeneratePathProperty="true" />
         <None Include="$(PkgMrMeeseeks_SourceGeneratorUtility)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 

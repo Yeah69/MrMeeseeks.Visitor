@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -19,17 +20,6 @@ public class SourceGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var testCode = new StringBuilder();
-        testCode.AppendLine($$"""
-namespace Asdf
-{
-public class Test {}
-}
-""");
-            
-        context.AddSource("Asdf.g.cs", testCode.ToString());
-        return;
-        
         var visitorInterfacePairAttribute =
             context.Compilation.GetTypeByMetadataName(typeof(VisitorInterfacePairAttribute).FullName ?? "")
             ?? throw new ArgumentException("Type not found by metadata name.", nameof(VisitorInterfacePairAttribute));
@@ -44,20 +34,26 @@ public class Test {}
             .Select(ad => (ad.ConstructorArguments[0].Value as INamedTypeSymbol, ad.ConstructorArguments[1].Value as INamedTypeSymbol))
             .OfType<(INamedTypeSymbol, INamedTypeSymbol)>();
 
-        var implementationTypeSetCache = new ImplementationTypeSetCache(context, new CheckInternalsVisible(context));
+        var implementationTypeSetCache = new NamedTypeCache(context, new CheckInternalsVisible(context));
         var interfaceTypesOfCurrentAssembly = implementationTypeSetCache.ForAssembly(context.Compilation.Assembly)
             .Where(nts => nts.TypeKind == TypeKind.Interface)
             .ToList();
 
         foreach (var (visitorInterfaceType, elementInterfaceType) in visitorInterfacePairs)
         {
-            StringBuilder code = new();
+            var code = new StringBuilder();
             var elementSubInterfaceTypes = interfaceTypesOfCurrentAssembly
                 .Where(it =>
                     it.AllDerivedTypes().Any(d => CustomSymbolEqualityComparer.Default.Equals(d, elementInterfaceType)))
                 .ToList();
+            
+            var allBaseInterfaces = elementSubInterfaceTypes
+                .SelectMany(it => it.AllDerivedTypes())
+                .ToImmutableHashSet(CustomSymbolEqualityComparer.Default);
 
             var visitFunctionsCode = string.Join(Environment.NewLine, elementSubInterfaceTypes
+                // Filter for leaf interfaces
+                .Where(i => !allBaseInterfaces.Contains(i))
                 .Select(i => $"void Visit{i.Name}({i.FullName()} element);")
                 .ToList());
 
