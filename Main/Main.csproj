@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>MrMeeseeks.Visitor</RootNamespace>
+        <AssemblyName>MrMeeseeks.Visitor</AssemblyName>
+        <PackageId>$(AssemblyName)</PackageId>
+        <Product>$(AssemblyName)</Product>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="Generator\**" />
+        <EmbeddedResource Remove="Generator\**" />
+        <None Remove="Generator\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MinVer" Version="4.3.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <None Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <None Include="$(PkgMicrosoft_CodeAnalysis_CSharp_Workspaces)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+        <PackageReference Include="MrMeeseeks.SourceGeneratorUtility" Version="1.0.9" PrivateAssets="all" GeneratePathProperty="true" />
+        <None Include="$(PkgMrMeeseeks_SourceGeneratorUtility)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+</Project>
