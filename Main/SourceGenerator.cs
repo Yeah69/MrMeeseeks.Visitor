@@ -19,6 +19,17 @@ public class SourceGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
+        var testCode = new StringBuilder();
+        testCode.AppendLine($$"""
+namespace Asdf
+{
+public class Test {}
+}
+""");
+            
+        context.AddSource("Asdf.g.cs", testCode.ToString());
+        return;
+        
         var visitorInterfacePairAttribute =
             context.Compilation.GetTypeByMetadataName(typeof(VisitorInterfacePairAttribute).FullName ?? "")
             ?? throw new ArgumentException("Type not found by metadata name.", nameof(VisitorInterfacePairAttribute));
