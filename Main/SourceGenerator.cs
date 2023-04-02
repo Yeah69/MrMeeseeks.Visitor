@@ -3,8 +3,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using MrMeeseeks.SourceGeneratorUtility;
 using MrMeeseeks.SourceGeneratorUtility.Extensions;
 
@@ -50,10 +48,13 @@ public class SourceGenerator : ISourceGenerator
             var allBaseInterfaces = elementSubInterfaceTypes
                 .SelectMany(it => it.AllDerivedTypes())
                 .ToImmutableHashSet(CustomSymbolEqualityComparer.Default);
-
-            var visitFunctionsCode = string.Join(Environment.NewLine, elementSubInterfaceTypes
+            
+            var leafInterfaces = elementSubInterfaceTypes
                 // Filter for leaf interfaces
                 .Where(i => !allBaseInterfaces.Contains(i))
+                .ToList();
+
+            var visitFunctionsCode = string.Join(Environment.NewLine, leafInterfaces
                 .Select(i => $"void Visit{i.Name}({i.FullName()} element);")
                 .ToList());
 
@@ -66,14 +67,34 @@ partial interface {{visitorInterfaceType.Name}}
 }
 }
 """);
-            var codeSource = CSharpSyntaxTree
-                .ParseText(SourceText.From(code.ToString(), Encoding.UTF8))
-                .GetRoot()
-                .NormalizeWhitespace()
-                .SyntaxTree
-                .GetText();
+            context.NormalizeWhitespaceAndAddSource(
+                $"{visitorInterfaceType.ContainingNamespace.FullName()}.{visitorInterfaceType.Name}.VisitorPart.g.cs", 
+                code);
             
-            context.AddSource($"{visitorInterfaceType.ContainingNamespace.FullName()}.{visitorInterfaceType.Name}.VisitorPart.g.cs", codeSource);
+            foreach (var leafInterface in leafInterfaces)
+            {
+                if (leafInterface.IsPartial()
+                    && !leafInterface
+                        .GetMembers("Accept")
+                        .OfType<IMethodSymbol>()
+                        .Any(m => m.Parameters.Length == 1
+                                  && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType)))
+                {
+                    var partialCode = new StringBuilder();
+                    partialCode.AppendLine($$"""
+namespace {{leafInterface.ContainingNamespace.FullName()}}
+{
+partial interface {{leafInterface.FullName()}}
+{
+void Accept({{visitorInterfaceType.FullName()}} visitor);
+}
+}
+""");
+                    context.NormalizeWhitespaceAndAddSource(
+                        $"{leafInterface.ContainingNamespace.FullName()}.{leafInterface.Name}.ElementPart.g.cs", 
+                        partialCode);
+                }
+            }
         }
     }
 }
