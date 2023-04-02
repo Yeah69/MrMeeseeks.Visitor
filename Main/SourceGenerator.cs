@@ -71,29 +71,26 @@ partial interface {{visitorInterfaceType.Name}}
                 $"{visitorInterfaceType.ContainingNamespace.FullName()}.{visitorInterfaceType.Name}.VisitorPart.g.cs", 
                 code);
             
-            foreach (var leafInterface in leafInterfaces)
+            if (elementInterfaceType.IsPartial()
+                && !elementInterfaceType
+                    .GetMembers("Accept")
+                    .OfType<IMethodSymbol>()
+                    .Any(m => m.Parameters.Length == 1
+                              && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType)))
             {
-                if (leafInterface.IsPartial()
-                    && !leafInterface
-                        .GetMembers("Accept")
-                        .OfType<IMethodSymbol>()
-                        .Any(m => m.Parameters.Length == 1
-                                  && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType)))
-                {
-                    var partialCode = new StringBuilder();
-                    partialCode.AppendLine($$"""
-namespace {{leafInterface.ContainingNamespace.FullName()}}
+                var partialCode = new StringBuilder();
+                partialCode.AppendLine($$"""
+namespace {{elementInterfaceType.ContainingNamespace.FullName()}}
 {
-partial interface {{leafInterface.FullName()}}
+partial interface {{elementInterfaceType.FullName()}}
 {
 void Accept({{visitorInterfaceType.FullName()}} visitor);
 }
 }
 """);
-                    context.NormalizeWhitespaceAndAddSource(
-                        $"{leafInterface.ContainingNamespace.FullName()}.{leafInterface.Name}.ElementPart.g.cs", 
-                        partialCode);
-                }
+                context.NormalizeWhitespaceAndAddSource(
+                    $"{elementInterfaceType.ContainingNamespace.FullName()}.{elementInterfaceType.Name}.ElementPart.g.cs", 
+                    partialCode);
             }
         }
     }
