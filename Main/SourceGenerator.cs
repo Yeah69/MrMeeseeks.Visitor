@@ -54,11 +54,13 @@ public class SourceGenerator : ISourceGenerator
                 .Where(i => !allBaseInterfaces.Contains(i))
                 .ToList();
 
-            var visitFunctionsCode = string.Join(Environment.NewLine, leafInterfaces
-                .Select(i => $"void Visit{i.Name}({i.FullName()} element);")
-                .ToList());
+            if (visitorInterfaceType.IsPartial())
+            {
+                var visitFunctionsCode = string.Join(Environment.NewLine, leafInterfaces
+                    .Select(i => $"void Visit{i.Name}({i.FullName()} element);")
+                    .ToList());
 
-            code.AppendLine($$"""
+                code.AppendLine($$"""
 namespace {{visitorInterfaceType.ContainingNamespace.FullName()}}
 {
 partial interface {{visitorInterfaceType.Name}}
@@ -67,9 +69,10 @@ partial interface {{visitorInterfaceType.Name}}
 }
 }
 """);
-            context.NormalizeWhitespaceAndAddSource(
-                $"{visitorInterfaceType.ContainingNamespace.FullName()}.{visitorInterfaceType.Name}.VisitorPart.g.cs", 
-                code);
+                context.NormalizeWhitespaceAndAddSource(
+                    $"{visitorInterfaceType.ContainingNamespace.FullName()}.{visitorInterfaceType.Name}.VisitorPart.g.cs", 
+                    code);
+            }
             
             if (elementInterfaceType.IsPartial()
                 && !elementInterfaceType

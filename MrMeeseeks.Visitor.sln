@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{87CD4AEA-9
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{92CDCF87-630D-4E49-A298-5F154FABDCB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,5 +23,9 @@ Global
 		{3DA7B70F-17DA-4AEC-BF6C-59EA13E55475}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DA7B70F-17DA-4AEC-BF6C-59EA13E55475}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DA7B70F-17DA-4AEC-BF6C-59EA13E55475}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92CDCF87-630D-4E49-A298-5F154FABDCB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92CDCF87-630D-4E49-A298-5F154FABDCB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92CDCF87-630D-4E49-A298-5F154FABDCB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92CDCF87-630D-4E49-A298-5F154FABDCB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
