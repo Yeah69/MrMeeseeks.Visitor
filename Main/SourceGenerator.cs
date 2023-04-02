@@ -116,14 +116,29 @@ void Accept({{visitorInterfaceType.FullName()}} visitor);
                                                   && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType))
                         is { IsPartialDefinition: true, PartialDefinitionPart: null }))
                 {
+                    var firstBaseAcceptDeclaration = implementation.AllBaseTypes()
+                        .Select(b => b.GetMembers("Accept").FirstOrDefault())
+                        .OfType<IMethodSymbol>()
+                        .FirstOrDefault(m => m.Parameters.Length == 1
+                                             && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType));
+
+                    var isVirtual = firstBaseAcceptDeclaration is { IsVirtual: true };
+                    var overridePrefix = isVirtual || firstBaseAcceptDeclaration is { IsAbstract: true }
+                        ? "override "
+                        : "";
+                    var baseCall = isVirtual
+                        ? "base.Accept(visitor);"
+                        : "";
+
                     var implementationCode = new StringBuilder();
                     implementationCode.AppendLine($$"""
 namespace {{implementation.ContainingNamespace.FullName()}}
 {
 partial class {{implementation.Name}}
 {
-public void Accept({{visitorInterfaceType.FullName()}} visitor)
+public {{overridePrefix}}void Accept({{visitorInterfaceType.FullName()}} visitor)
 {
+{{baseCall}}
 visitor.Visit{{leafInterface.Name}}(this);
 }
 }
