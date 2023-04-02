@@ -82,7 +82,7 @@ partial interface {{visitorInterfaceType.Name}}
                 partialCode.AppendLine($$"""
 namespace {{elementInterfaceType.ContainingNamespace.FullName()}}
 {
-partial interface {{elementInterfaceType.FullName()}}
+partial interface {{elementInterfaceType.Name}}
 {
 void Accept({{visitorInterfaceType.FullName()}} visitor);
 }
