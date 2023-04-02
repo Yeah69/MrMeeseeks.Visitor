@@ -92,6 +92,48 @@ void Accept({{visitorInterfaceType.FullName()}} visitor);
                     $"{elementInterfaceType.ContainingNamespace.FullName()}.{elementInterfaceType.Name}.ElementPart.g.cs", 
                     partialCode);
             }
+            
+            var elementImplementations = implementationTypeSetCache.ForAssembly(context.Compilation.Assembly)
+                .Where(nts => nts.TypeKind is TypeKind.Class or TypeKind.Struct or TypeKind.Structure)
+                .Where(nts => nts.AllInterfaces.Any(i => leafInterfaces.Contains(i, CustomSymbolEqualityComparer.Default)));
+            
+            foreach (var implementation in elementImplementations)
+            {
+                if (implementation.IsPartial()
+                    && implementation
+                    .AllInterfaces
+                    .SingleOrDefault(i => leafInterfaces.Contains(i, CustomSymbolEqualityComparer.Default))
+                    is {} leafInterface
+                    && (!implementation
+                        .GetMembers("Accept")
+                        .OfType<IMethodSymbol>()
+                        .Any(m => m.Parameters.Length == 1
+                                  && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType))
+                    || implementation
+                            .GetMembers("Accept")
+                            .OfType<IMethodSymbol>()
+                            .SingleOrDefault(m => m.Parameters.Length == 1
+                                                  && CustomSymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, visitorInterfaceType))
+                        is { IsPartialDefinition: true, PartialDefinitionPart: null }))
+                {
+                    var implementationCode = new StringBuilder();
+                    implementationCode.AppendLine($$"""
+namespace {{implementation.ContainingNamespace.FullName()}}
+{
+partial class {{implementation.Name}}
+{
+public void Accept({{visitorInterfaceType.FullName()}} visitor)
+{
+visitor.Visit{{leafInterface.Name}}(this);
+}
+}
+}
+""");
+                    context.NormalizeWhitespaceAndAddSource(
+                        $"{implementation.ContainingNamespace.FullName()}.{implementation.Name}.ImplementationPart.g.cs", 
+                        implementationCode);
+                }
+            }
         }
     }
 }
