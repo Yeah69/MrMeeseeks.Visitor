@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MrMeeseeks.Visitor" Version="1.0.0-alpha.5" />
+      <PackageReference Include="MrMeeseeks.Visitor" Version="1.0.0-alpha.6" />
     </ItemGroup>
 
 </Project>
