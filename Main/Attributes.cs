@@ -20,7 +20,7 @@ public class VisitorInterfacePairAttribute : Attribute
 /// <summary>
 /// Marks a visitor interface.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Interface)]
 public class VisitorInterfaceAttribute : Attribute
 {
     public VisitorInterfaceAttribute(
