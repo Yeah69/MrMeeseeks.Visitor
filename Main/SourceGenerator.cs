@@ -21,6 +21,9 @@ public class SourceGenerator : ISourceGenerator
         var visitorInterfacePairAttribute =
             context.Compilation.GetTypeByMetadataName(typeof(VisitorInterfacePairAttribute).FullName ?? "")
             ?? throw new ArgumentException("Type not found by metadata name.", nameof(VisitorInterfacePairAttribute));
+        var visitorInterfaceAttribute =
+            context.Compilation.GetTypeByMetadataName(typeof(VisitorInterfaceAttribute).FullName ?? "")
+            ?? throw new ArgumentException("Type not found by metadata name.", nameof(VisitorInterfaceAttribute));
         var visitorInterfacePairs = context
             .Compilation
             .Assembly
@@ -30,7 +33,17 @@ public class SourceGenerator : ISourceGenerator
                          && ad.ConstructorArguments[0].Value is INamedTypeSymbol
                          && ad.ConstructorArguments[1].Value is INamedTypeSymbol)
             .Select(ad => (ad.ConstructorArguments[0].Value as INamedTypeSymbol, ad.ConstructorArguments[1].Value as INamedTypeSymbol))
-            .OfType<(INamedTypeSymbol, INamedTypeSymbol)>();
+            .OfType<(INamedTypeSymbol, INamedTypeSymbol)>()
+            
+            .Concat(new NamedTypeCache(context, new CheckInternalsVisible(context))
+                .ForAssembly(context.Compilation.Assembly)
+                .Where(nts => nts.GetAttributes()
+                    .Any(ad => CustomSymbolEqualityComparer.Default.Equals(ad.AttributeClass, visitorInterfaceAttribute)))
+                .Select(nts => nts.GetAttributes()
+                    .First(ad => CustomSymbolEqualityComparer.Default.Equals(ad.AttributeClass, visitorInterfaceAttribute))
+                    .ConstructorArguments[0].Value is INamedTypeSymbol elementInterfaceType
+                    ? (nts, elementInterfaceType)
+                    : throw new ArgumentException("Attribute not found on visitor interface.", nameof(VisitorInterfaceAttribute))));
 
         var implementationTypeSetCache = new NamedTypeCache(context, new CheckInternalsVisible(context));
         var interfaceTypesOfCurrentAssembly = implementationTypeSetCache.ForAssembly(context.Compilation.Assembly)
