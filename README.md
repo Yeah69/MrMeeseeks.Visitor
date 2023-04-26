@@ -40,13 +40,9 @@ As long as the visitor interface, the element interface and the element implemen
 Here is an example of the manual effort:
 
 ```csharp
-using MrMeeseeks.Visitor;
-using MrMeeseeks.Visitor.Sample;
-
-[assembly:VisitorInterfacePair(typeof(IVisitor), typeof(IElement))]
-
 namespace MrMeeseeks.Visitor.Sample;
 
+[VisitorInterface(typeof(IElement))]
 public partial interface IVisitor { }
 
 public partial interface IElement { }

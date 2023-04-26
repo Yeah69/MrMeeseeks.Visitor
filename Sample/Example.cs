@@ -1,10 +1,6 @@
-﻿using MrMeeseeks.Visitor;
-using MrMeeseeks.Visitor.Sample;
+﻿namespace MrMeeseeks.Visitor.Sample;
 
-[assembly:VisitorInterfacePair(typeof(IVisitor), typeof(IElement))]
-
-namespace MrMeeseeks.Visitor.Sample;
-
+[VisitorInterface(typeof(IElement))]
 public partial interface IVisitor { }
 
 public partial interface IElement { }
